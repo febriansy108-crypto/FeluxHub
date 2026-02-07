@@ -1,6 +1,5 @@
 -- Script UI Felux
 -- Oleh: [FeluxHub | Premium]
--- Tanggal: 2024
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
