@@ -1,4 +1,4 @@
-local FeluxHub  = loadstring(game:HttpGet('https://sirius.menu/FeluxHub'))()
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = FeluxHub | Comunity:CreateWindow({
    Name = "FeluxHub | Free",
@@ -6,7 +6,7 @@ local Window = FeluxHub | Comunity:CreateWindow({
    LoadingTitle = "FeluxHub Loading",
    LoadingSubtitle = "coded by : Randhy",
    ShowText = "Rayfield", -- for mobile users to unhide rayfield, change if you'd like
-   Theme = "Serenity", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+   Theme = "AmberGlow", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
    ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
 
