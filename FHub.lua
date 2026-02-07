@@ -168,3 +168,183 @@ local DiveThrowVFX = {
     Active = false,
     Connections = {}
 }
+---------------------------------------------------------------------
+-- Apply handler to matching VFX only
+---------------------------------------------------------------------
+local function Apply(handler)
+    for _, obj in ipairs(VFXFolder:GetDescendants()) do
+        if HasDiveOrThrowAncestor(obj) then
+            handler(obj)
+        end
+    end
+end
+
+---------------------------------------------------------------------
+-- ENABLE
+---------------------------------------------------------------------
+function EnableDiveThrowVFX()
+    if DiveThrowVFX.Active or not VFXFolder then return end
+    DiveThrowVFX.Active = true
+
+    -- Existing
+    Apply(DisableVisual)
+
+    -- Future spawned
+    DiveThrowVFX.Connections[#DiveThrowVFX.Connections + 1] =
+        VFXFolder.DescendantAdded:Connect(function(child)
+            task.wait()
+            if DiveThrowVFX.Active and HasDiveOrThrowAncestor(child) then
+                DisableVisual(child)
+            end
+        end)
+end
+
+---------------------------------------------------------------------
+-- DISABLE / RESTORE
+---------------------------------------------------------------------
+function DisableDiveThrowVFX()
+    if not DiveThrowVFX.Active or not VFXFolder then return end
+    DiveThrowVFX.Active = false
+
+    Apply(RestoreVisual)
+
+    for _, conn in ipairs(DiveThrowVFX.Connections) do
+        conn:Disconnect()
+    end
+    table.clear(DiveThrowVFX.Connections)
+end
+
+
+
+local function ExecuteDestroyPopup()
+    local target = PlayerGui:FindFirstChild("Small Notification")
+    if target then target:Destroy() end
+    PlayerGui.ChildAdded:Connect(function(child)
+        if child.Name == "Small Notification" then
+            task.wait() 
+            child:Destroy()
+        end
+    end)
+end
+
+local function StartAntiAFK()
+    local VirtualUser = game:GetService("VirtualUser")
+    if getconnections then
+        for _, conn in pairs(getconnections(LocalPlayer.Idled)) do
+            if conn.Disable then conn:Disable() elseif conn.Disconnect then conn:Disconnect() end
+        end
+    end
+    pcall(function()
+        LocalPlayer.Idled:Connect(function()
+            VirtualUser:CaptureController()
+            VirtualUser:ClickButton2(Vector2.new())
+        end)
+    end)
+end
+
+-- ============================================
+-- WALK ON WATER (STABLE / NO RAYCAST)
+-- ============================================
+
+local WATER_Y_LEVEL = nil
+local WATER_OFFSET = 0.1 -- tinggi berdiri di atas air
+
+local function DetectWaterLevel(hrp)
+    -- asumsi: player mengaktifkan saat dekat / di atas air
+    return hrp.Position.Y - 2
+end
+
+local function ToggleWaterWalk(state)
+    SettingsState.WaterWalk.Active = state
+
+    if state then
+        if SettingsState.WaterWalk.Part then return end
+
+        local char = Players.LocalPlayer.Character
+        if not char then return end
+
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        -- DETECT WATER LEVEL ONCE
+        WATER_Y_LEVEL = DetectWaterLevel(hrp)
+
+        local platform = Instance.new("Part")
+        platform.Name = "UQiLL_WaterPlatform"
+        platform.Size = Vector3.new(18, 1, 18)
+        platform.Anchored = true
+        platform.CanCollide = true
+        platform.Transparency = 1
+        platform.Material = Enum.Material.SmoothPlastic
+        platform.Parent = Workspace
+
+        SettingsState.WaterWalk.Part = platform
+
+        SettingsState.WaterWalk.Connection = RunService.Heartbeat:Connect(function()
+            local charNow = Players.LocalPlayer.Character
+            if not charNow then return end
+
+            local hrpNow = charNow:FindFirstChild("HumanoidRootPart")
+            if not hrpNow then return end
+
+            -- Y DIKUNCI, X/Z IKUT PLAYER
+            platform.CFrame = CFrame.new(
+                hrpNow.Position.X,
+                WATER_Y_LEVEL + WATER_OFFSET,
+                hrpNow.Position.Z
+            )
+        end)
+
+    else
+        if SettingsState.WaterWalk.Connection then
+            SettingsState.WaterWalk.Connection:Disconnect()
+            SettingsState.WaterWalk.Connection = nil
+        end
+
+        if SettingsState.WaterWalk.Part then
+            SettingsState.WaterWalk.Part:Destroy()
+            SettingsState.WaterWalk.Part = nil
+        end
+
+        WATER_Y_LEVEL = nil
+    end
+end
+
+
+local function ToggleAnims(state)
+    SettingsState.AnimsDisabled.Active = state
+    
+    local function StopAll()
+        local Char = Players.LocalPlayer.Character
+        if Char and Char:FindFirstChild("Humanoid") then
+            local Hum = Char.Humanoid
+            local Animator = Hum:FindFirstChild("Animator")
+            if Animator then
+                for _, track in pairs(Animator:GetPlayingAnimationTracks()) do
+                    track:Stop()
+                end
+            end
+        end
+    end
+
+    if state then
+        StopAll()
+        local function HookChar(char)
+            local hum = char:WaitForChild("Humanoid")
+            local animator = hum:WaitForChild("Animator")
+            local conn = animator.AnimationPlayed:Connect(function(track)
+                if SettingsState.AnimsDisabled.Active then track:Stop() end
+            end)
+            table.insert(SettingsState.AnimsDisabled.Connections, conn)
+        end
+
+        if Players.LocalPlayer.Character then HookChar(Players.LocalPlayer.Character) end
+        local conn2 = Players.LocalPlayer.CharacterAdded:Connect(HookChar)
+        table.insert(SettingsState.AnimsDisabled.Connections, conn2)
+    else
+        for _, conn in pairs(SettingsState.AnimsDisabled.Connections) do
+            conn:Disconnect()
+        end
+        SettingsState.AnimsDisabled.Connections = {}
+    end
+end
