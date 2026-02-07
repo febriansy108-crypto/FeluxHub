@@ -8,9 +8,9 @@ end
 
 local CoreGui = game:GetService("CoreGui")
 local GUI_NAMES = {
-    Main = "UQiLL_Fishing_UI",
-    Mobile = "UQiLL_Mobile_Button",
-    Coords = "UQiLL_Coords_HUD"
+    Main = "Felux_Fishing_UI",
+    Mobile = "Felux_Mobile_Button",
+    Coords = "Felux_Coords_HUD"
 }
 
 for _, v in pairs(CoreGui:GetChildren()) do
@@ -20,7 +20,7 @@ for _, v in pairs(CoreGui:GetChildren()) do
 end
 
 for _, v in pairs(CoreGui:GetDescendants()) do
-    if v:IsA("TextLabel") and v.Text == "UQiLL" then
+    if v:IsA("FeluxHub | Free") and v.Text == "Felux" then
         
         local container = v
         
@@ -53,10 +53,10 @@ local instant = false
 local superInstant = true 
 local blatant = true 
 
-local args = {-1.233, 1, workspace:GetServerTimeNow()}
-local delayTime = 0.56   
-local delayCharge = 1.15 
-local delayReset = 0.2 
+local args = {-1.230, 1, workspace:GetServerTimeNow()}
+local delayTime = 0.54  
+local delayCharge = 1.14 
+local delayReset = 0.19
 
 local rs = game:GetService("ReplicatedStorage")
 local net = rs.Packages["_Index"]["sleitnick_net@0.2.0"].net
@@ -64,7 +64,7 @@ local net = rs.Packages["_Index"]["sleitnick_net@0.2.0"].net
 -- Remote Definitions
 local ChargeRod    = net["RF/ChargeFishingRod"]
 local RequestGame  = net["RF/RequestFishingMinigameStarted"]
-local CompleteGame = net["RE/FishingCompleted"]
+local CompleteGame = net["RF/CatchFishCompleted"]
 local CancelInput  = net["RF/CancelFishingInputs"]
 local SellAll      = net["RF/SellAllItems"] 
 local EquipTank    = net["RF/EquipOxygenTank"]
@@ -101,5 +101,19 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 local WindUI
 ==============================
--- STATE MANAGEMENT SYSTEM
+-- AUTO SELL FEATURE
 ==============================
+local function StartAutoSellLoop()
+    task.spawn(function()
+        print("💰 Auto Sell: BACKGROUND MODE STARTED")
+        while SettingsState.AutoSell.TimeActive do
+            for i = 1, SettingsState.AutoSell.TimeInterval do
+                if not SettingsState.AutoSell.TimeActive then return end
+                task.wait(1)
+            end
+            task.spawn(function()
+                pcall(function() SellAll:InvokeServer() end)
+            end)
+        end
+    end)
+end
