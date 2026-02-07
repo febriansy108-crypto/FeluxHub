@@ -1,14 +1,14 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-local Window = RayField:CreateWindow({
-   Name = "FeluxHub | Free",
+local Window = Rayfield:CreateWindow({
+   Name = "FeluxHub | Free ",
    Icon = ghost, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "FeluxHub Loading",
-   LoadingSubtitle = "coded by : Randhy",
+   LoadingTitle = "FeluxHub Loading ...",
+   LoadingSubtitle = "Coded by : Randhy",
    ShowText = "FeluxHub | Comunity", -- for mobile users to unhide rayfield, change if you'd like
    Theme = "AmberGlow", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
-   ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
+   ToggleUIKeybind = "F", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
 
    DisableRayfieldPrompts = false,
    DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
@@ -16,13 +16,13 @@ local Window = RayField:CreateWindow({
    ConfigurationSaving = {
       Enabled = true,
       FolderName = FeluxHub, -- Create a custom folder for your hub/game
-      FileName = "FeluxHub"
+      FileName = "FeluxHubHub"
    },
 
    Discord = {
-      Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
-      Invite = "https://discord.gg/eVPZ5Sge8", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
-      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+      Enabled = True, -- Prompt the user to join your Discord server if their executor supports it
+      Invite = "https://discord.gg/zErfC2cZ4", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = False -- Set this to false to make them join the discord every time they load it up
    },
 
    KeySystem = false, -- Set this to true to use our key system
