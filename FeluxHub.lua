@@ -1,6 +1,6 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local FeluxHub  = loadstring(game:HttpGet('https://sirius.menu/FeluxHub'))()
 
-local Window = Rayfield:CreateWindow({
+local Window = FeluxHub | Comunity:CreateWindow({
    Name = "FeluxHub | Free",
    Icon = ghost, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
    LoadingTitle = "FeluxHub Loading",
