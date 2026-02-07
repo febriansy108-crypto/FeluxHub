@@ -1,11 +1,11 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-local Window = FeluxHub | Comunity:CreateWindow({
+local Window = RayField:CreateWindow({
    Name = "FeluxHub | Free",
    Icon = ghost, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
    LoadingTitle = "FeluxHub Loading",
    LoadingSubtitle = "coded by : Randhy",
-   ShowText = "Rayfield", -- for mobile users to unhide rayfield, change if you'd like
+   ShowText = "FeluxHub | Comunity", -- for mobile users to unhide rayfield, change if you'd like
    Theme = "AmberGlow", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
    ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
