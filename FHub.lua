@@ -1,6 +1,7 @@
-==============================
+-- =====================================================
 -- CLEAN UP SYSTEM
-==============================
+-- =====================================================
+
 if getgenv().fishingStart then
     getgenv().fishingStart = false
     task.wait(0.5)
@@ -44,9 +45,11 @@ for _, v in pairs(CoreGui:GetDescendants()) do
         end
     end
 end
-==============================
+
+-- =====================================================
 -- VARIABLE + REMOTE
-==============================
+-- =====================================================
+
 getgenv().fishingStart = false
 local legit = false
 local instant = false
@@ -100,9 +103,11 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 local WindUI
-==============================
+
+-- =====================================================
 -- AUTO SELL FEATURE
-==============================
+-- =====================================================
+
 local function StartAutoSellLoop()
     task.spawn(function()
         print("💰 Auto Sell: BACKGROUND MODE STARTED")
@@ -117,3 +122,49 @@ local function StartAutoSellLoop()
         end
     end)
 end
+
+-- =====================================================
+-- ⚙️ BAGIAN 6: FITUR LAIN
+-- =====================================================
+
+local function ToggleFPSBoost(state)
+    if state then
+        pcall(function()
+            settings().Rendering.QualityLevel = 1
+            game:GetService("Lighting").GlobalShadows = false
+        end)
+        for _, v in pairs(game:GetDescendants()) do
+            if v:IsA("BasePart") then v.Material = Enum.Material.Plastic; v.CastShadow = false end
+        end
+    end
+end
+
+-- local function ExecuteRemoveVFX()
+--     local function KillVFX(obj)
+--         if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") then
+--             obj.Enabled = false
+--             obj.Transparency = NumberSequence.new(1)
+--         elseif obj:IsA("Explosion") then obj.Visible = false end
+--     end
+--     for _, v in pairs(game:GetDescendants()) do pcall(function() KillVFX(v) end) end
+--     workspace.DescendantAdded:Connect(function(child)
+--         task.wait()
+--         pcall(function() 
+--             KillVFX(child) 
+--             for _, gc in pairs(child:GetDescendants()) do KillVFX(gc) end 
+--         end)
+--     end)
+-- end
+
+-- =====================================================
+-- DISABLE DIVE & THROW VFX (FINAL FIX)
+-- Reason: VFX depth is NOT flat → must scan ancestors
+-- =====================================================
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local VFXFolder = ReplicatedStorage:FindFirstChild("VFX")
+
+local DiveThrowVFX = {
+    Active = false,
+    Connections = {}
+}
