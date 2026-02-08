@@ -101,6 +101,7 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 local WindUI = -
--- ================================================
--- MENU TELEPORT PULAU
--- ================================================
+-- =====================================================
+-- CLEANUP SYSTEM
+-- =====================================================
+
