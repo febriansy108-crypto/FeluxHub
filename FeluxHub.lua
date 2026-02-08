@@ -501,6 +501,276 @@ RunService.RenderStepped:Connect(function()
         lastTick = now
     end
 end)
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local Config = {
+    Position = UDim2.new(1, -130, 0, 80),
+    Size = UDim2.new(0, 120, 0, 50),
+    BackgroundColor = Color3.fromRGB(18, 18, 24),
+    BackgroundTransparency = 0.15,
+    TextColor = Color3.fromRGB(255, 255, 255),
+    TextMuted = Color3.fromRGB(160, 160, 175),
+    BorderColor = Color3.fromRGB(55, 55, 70),
+
+    DelayBeforeShow = 3.5, 
+
+    Duration = 5,          
+
+}
+
+local Panel = {}
+Panel.__index = Panel
+
+local activeNotifications = {} 
+
+local connection = nil
+local updateConnection = nil
+
+function Panel:Init(customConfig)
+    if customConfig then
+        for key, value in pairs(customConfig) do
+            Config[key] = value
+        end
+    end
+
+    self.ScreenGui = Instance.new("ScreenGui")
+    self.ScreenGui.Name = "Notification_Panel"
+    self.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    self.ScreenGui.ResetOnSpawn = false
+    self.ScreenGui.DisplayOrder = 999
+    self.ScreenGui.Parent = CoreGui
+
+    self.Container = Instance.new("Frame")
+    self.Container.Name = "Container"
+    self.Container.AnchorPoint = Vector2.new(1, 0)
+    self.Container.Position = Config.Position
+    self.Container.Size = Config.Size
+    self.Container.BackgroundColor3 = Config.BackgroundColor
+    self.Container.BackgroundTransparency = Config.BackgroundTransparency
+    self.Container.BorderSizePixel = 0
+    self.Container.Parent = self.ScreenGui
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = self.Container
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Config.BorderColor
+    stroke.Thickness = 1
+    stroke.Transparency = 0.4
+    stroke.Parent = self.Container
+
+    local padding = Instance.new("UIPadding")
+    padding.PaddingTop = UDim.new(0, 6)
+    padding.PaddingBottom = UDim.new(0, 6)
+    padding.PaddingLeft = UDim.new(0, 10)
+    padding.PaddingRight = UDim.new(0, 10)
+    padding.Parent = self.Container
+
+    local layout = Instance.new("UIListLayout")
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Padding = UDim.new(0, 2)
+    layout.Parent = self.Container
+
+    self:CreateRow("Notification", "", 1, true)
+
+    self.CountLabel = self:CreateRow("Notification:", "0", 2)
+
+    self:MakeDraggable()
+
+    self:HookRemote()
+
+    self:StartLoop()
+
+    return self
+end
+
+function Panel:CreateRow(label, defaultValue, order, isTitle)
+    local row = Instance.new("Frame")
+    row.Name = label
+    row.Size = UDim2.new(1, 0, 0, 18)
+    row.BackgroundTransparency = 1
+    row.LayoutOrder = order
+    row.Parent = self.Container
+
+    if isTitle then
+        local titleText = Instance.new("TextLabel")
+        titleText.Name = "Title"
+        titleText.Size = UDim2.new(1, 0, 1, 0)
+        titleText.BackgroundTransparency = 1
+        titleText.Font = Enum.Font.GothamBold
+        titleText.Text = label
+        titleText.TextColor3 = Config.TextColor
+        titleText.TextSize = 12
+        titleText.TextXAlignment = Enum.TextXAlignment.Center
+        titleText.Parent = row
+        return nil
+    end
+
+    local labelText = Instance.new("TextLabel")
+    labelText.Name = "Label"
+    labelText.Size = UDim2.new(0, 55, 1, 0)
+    labelText.BackgroundTransparency = 1
+    labelText.Font = Enum.Font.GothamBold
+    labelText.Text = label
+    labelText.TextColor3 = Config.TextMuted
+    labelText.TextSize = 11
+    labelText.TextXAlignment = Enum.TextXAlignment.Left
+    labelText.Parent = row
+
+    local valueText = Instance.new("TextLabel")
+    valueText.Name = "Value"
+    valueText.Size = UDim2.new(1, -55, 1, 0)
+    valueText.Position = UDim2.new(0, 55, 0, 0)
+    valueText.BackgroundTransparency = 1
+    valueText.Font = Enum.Font.GothamBold
+    valueText.Text = defaultValue
+    valueText.TextColor3 = Config.TextColor
+    valueText.TextSize = 13
+    valueText.TextXAlignment = Enum.TextXAlignment.Right
+    valueText.Parent = row
+
+    return valueText
+end
+
+function Panel:AddNotification()
+    local now = tick()
+    local showTime = now + Config.DelayBeforeShow
+    local hideTime = showTime + Config.Duration
+
+    table.insert(activeNotifications, {
+        showAt = showTime,
+        hideAt = hideTime
+    })
+end
+
+function Panel:StartLoop()
+    if updateConnection then updateConnection:Disconnect() end
+
+    updateConnection = RunService.Heartbeat:Connect(function()
+        local now = tick()
+        local count = 0
+        local cleanList = {}
+
+        for _, notif in ipairs(activeNotifications) do
+
+            if now < notif.hideAt then
+                table.insert(cleanList, notif)
+
+                if now >= notif.showAt then
+                    count = count + 1
+                end
+            end
+        end
+
+        activeNotifications = cleanList
+        if self.CountLabel then
+            self.CountLabel.Text = tostring(count)
+        end
+    end)
+end
+
+function Panel:HookRemote()
+    local remote = nil
+    local LocalPlayer = game:GetService("Players").LocalPlayer
+
+    local function findRemote(parent, targetName)
+        for _, child in pairs(parent:GetDescendants()) do
+            if child:IsA("RemoteEvent") and string.find(child.Name, targetName) then
+                return child
+            end
+        end
+        return nil
+    end
+
+    local function isLocalPlayerEvent(...)
+        local args = {...}
+        for _, arg in pairs(args) do
+            if typeof(arg) == "Instance" then
+                if arg:IsA("Player") and arg ~= LocalPlayer then return false end
+                if arg:IsA("Model") and arg ~= LocalPlayer.Character then
+                    local player = game:GetService("Players"):GetPlayerFromCharacter(arg)
+                    if player and player ~= LocalPlayer then return false end
+                end
+            end
+        end
+        return true
+    end
+
+    remote = findRemote(ReplicatedStorage, "CaughtFishVisual")
+
+    if not remote then
+         pcall(function()
+            local packages = ReplicatedStorage:FindFirstChild("Packages")
+            if packages then
+                local idx = packages:FindFirstChild("_Index")
+                if idx then
+                    for _, folder in pairs(idx:GetChildren()) do
+                        if string.find(folder.Name, "sleitnick_net") and folder:FindFirstChild("net") then
+                            remote = folder.net:FindFirstChild("RE/CaughtFishVisual")
+                            if remote then break end
+                        end
+                    end
+                end
+            end
+        end)
+    end
+
+    if remote then
+        connection = remote.OnClientEvent:Connect(function(...)
+            if isLocalPlayerEvent(...) then
+                self:AddNotification()
+            end
+        end)
+        print("[Notification Panel] Hooked to " .. remote:GetFullName())
+    else
+        warn("[Notification Panel] Could not find CaughtFishVisual remote")
+    end
+end
+
+function Panel:MakeDraggable()
+    local dragging = false
+    local dragStart, startPos
+    self.Container.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = self.Container.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            self.Container.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+function Panel:Toggle()
+    if self.Container then self.Container.Visible = not self.Container.Visible end
+end
+
+function Panel:Destroy()
+    if connection then connection:Disconnect() end
+    if updateConnection then updateConnection:Disconnect() end
+    if self.ScreenGui then self.ScreenGui:Destroy() end
+    activeNotifications = {}
+end
+
+Panel:Init()
+
+return Panel
+
+   
+1
+    
 -- =====================================================
 -- DISABLE 3D RENDRING
 -- =====================================================
