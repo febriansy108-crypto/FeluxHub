@@ -121,3 +121,21 @@ local Waypoints = {
     ["Sacred Temple"]       = Vector3.new(1498, -22, -640),
     ["Crater Island"]       = CFrame.new(1015, 15, 5097) * CFrame.Angles(0, math.rad(140), 0),
     ["Underground Cellar"]     = Vector3.new(2135, -91, -700),
+
+local function TeleportTo(targetPos)
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local HRP = LocalPlayer.Character.HumanoidRootPart
+        HRP.AssemblyLinearVelocity = Vector3.new(0,0,0)
+        
+        -- Kita buat variable offset untuk tinggi (supaya tidak nyangkut di tanah)
+        local heightOffset = Vector3.new(0, 3, 0)
+
+        if typeof(targetPos) == "Vector3" then
+            -- Jika data cuma Vector3, buat CFrame baru (rotasi default 0)
+            HRP.CFrame = CFrame.new(targetPos + heightOffset)
+        elseif typeof(targetPos) == "CFrame" then
+            -- Jika data sudah CFrame (ada rotasinya), pakai langsung + tingginya
+            HRP.CFrame = targetPos + heightOffset
+        end
+    end
+end
