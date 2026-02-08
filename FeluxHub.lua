@@ -222,7 +222,7 @@ function StopAutoWeather()
 end
 
 -- =====================================================
--- 💰 BAGIAN 4: AUTO SELL
+-- AUTO SELL MODE
 -- =====================================================
 local function StartAutoSellLoop()
     task.spawn(function()
