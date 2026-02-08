@@ -100,7 +100,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-local WindUI = -
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/GarzvR/feluxhub/refs/heads/main/FeluxHub.lua"))()
 -- =====================================================
 -- UTILTY TELEPORT MENU
 -- =====================================================
