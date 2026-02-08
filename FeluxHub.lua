@@ -1,5 +1,5 @@
 -- =====================================================
--- 🧹 BAGIAN 1: CLEANUP SYSTEM
+-- CLEANUP SYSTEM
 -- =====================================================
 if getgenv().fishingStart false
     getgenv().fishingStart = false
@@ -47,13 +47,13 @@ end
 
 
 -- =====================================================
--- 🎣 BAGIAN 2: VARIABEL & REMOTE
+-- VARIABEL & REMOTE
 -- =====================================================
 getgenv().fishingStart = false
 local legit = false
 local instant = false
 local superInstant = true 
-local blatant = true 
+local blatant = true
 
 local args = {-1.233, 1, workspace:GetServerTimeNow()}
 local delayTime = 0.56   
@@ -82,9 +82,8 @@ local SettingsState = {
         TimeInterval = 50,
         IsSelling = false
     },
-    AutoWeather = {
-        Active = false,
-        Targets = {Wind,Claudy, Strom} 
+    local args = {"Wind,Cloudy,Storm"}
+game:GetService("ReplicatedStorage").RF/PurchaseWeatherEvent:InvokeServer(unpack(args))
     },
     PosWatcher = { Active = false, Connection = nil },
     WaterWalk = { Active = false, Part = nil, Connection = nil },
@@ -102,3 +101,6 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 local WindUI = -
+-- =======================================================
+-- MENU TELEPORT PULAU
+-- ========================================================
