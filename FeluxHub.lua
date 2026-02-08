@@ -449,3 +449,55 @@ local function ToggleAnims(state)
         SettingsState.AnimsDisabled.Connections = {}
     end
 end
+-- =====================================================
+-- BAGIAN 1: FPS
+-- =====================================================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Stats = game:GetService("Stats")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+-- =====================================================
+-- BAGIAN 2: FPS
+-- =====================================================
+local fps = 0
+local frameCount = 0
+local lastTick = os.clock()
+
+RunService.RenderStepped:Connect(function()
+    frameCount = frameCount + 1
+    local now = os.clock()
+
+    if now - lastTick >= 1 then
+        fps = frameCount
+        frameCount = 0
+        lastTick = now
+    end
+end)
+-- =====================================================
+-- DISABLE 3D RENDRING
+-- =====================================================
+local RunService = game:GetService("RunService")
+
+local NoRender3D = {
+    Active = false,
+    Supported = typeof(RunService.Set3dRenderingEnabled) == "function"
+}
+
+function NoRender3D:Enable()
+    if self.Active or not self.Supported then return end
+    pcall(function()
+        RunService:Set3dRenderingEnabled(false)
+    end)
+    self.Active = true
+end
+
+function NoRender3D:Disable()
+    if not self.Active or not self.Supported then return end
+    pcall(function()
+        RunService:Set3dRenderingEnabled(true)
+    end)
+    self.Active = false
+end
