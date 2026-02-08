@@ -121,6 +121,7 @@ local Waypoints = {
     ["Sacred Temple"]       = Vector3.new(1498, -22, -640),
     ["Crater Island"]       = CFrame.new(1015, 15, 5097) * CFrame.Angles(0, math.rad(140), 0),
     ["Underground Cellar"]     = Vector3.new(2135, -91, -700),
+}
 
 local function TeleportTo(targetPos)
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -138,4 +139,102 @@ local function TeleportTo(targetPos)
             HRP.CFrame = targetPos + heightOffset
         end
     end
+end
+-- ==========================================
+-- AUTO WEATHER v4 — Ultra Light + Stable
+-- ==========================================
+
+local RS = game:GetService("ReplicatedStorage")
+local Replion = require(RS.Packages.Replion)
+
+local EventsReplion = Replion.Client:WaitReplion("Events")
+
+local PurchaseWeather = RS
+	:WaitForChild("Packages")
+	:WaitForChild("_Index")
+	:WaitForChild("sleitnick_net@0.2.0")
+	:WaitForChild("net")
+	:WaitForChild("RF/PurchaseWeatherEvent")
+
+-- cache connection
+local WeatherConn
+
+-- cek apakah weather masih aktif di WeatherMachine
+local function IsWeatherActive(Wind,Cloudy,Storm)
+	local list = EventsReplion:Get("WeatherMachine")
+	if not list then return false end
+
+	for _, v in ipairs(list) do
+		if v == name then
+			return true
+		end
+	end
+	return false
+end
+
+-- beli ulang jika cuaca habis
+local function WeatherUpdated()
+	local selected = SettingsState.AutoWeather.SelectedList
+	if not selected then return end
+
+	local activeList = EventsReplion:Get("WeatherMachine") or {}
+
+	for _, weather in ipairs(selected) do
+		if not IsWeatherActive(weather) then
+			warn("[AUTO WEATHER] Purchasing:", weather)
+			pcall(function()
+				PurchaseWeather:InvokeServer(weather)
+			end)
+			task.wait(0.2)
+		end
+	end
+end
+
+-- start mode
+function StartAutoWeather()
+	if not SettingsState.AutoWeather.Active then return end
+
+	warn("===== WEATHER SNIFFER ARMED v4 =====")
+
+	-- disconnect old
+	if WeatherConn then
+		WeatherConn:Disconnect()
+	end
+
+	-- listen perubahan state replion WeatherMachine
+	WeatherConn = EventsReplion:OnChange("WeatherMachine", function(newValue)
+		warn("[SNIFF] WeatherMachine Changed =", newValue)
+		task.defer(WeatherUpdated)
+	end)
+
+	-- initial scan
+	task.defer(WeatherUpdated)
+end
+
+-- stop mode
+function StopAutoWeather()
+	if WeatherConn then
+		WeatherConn:Disconnect()
+		WeatherConn = nil
+	end
+
+	warn("[AUTO WEATHER] Disabled")
+end
+
+-- =====================================================
+-- 💰 BAGIAN 4: AUTO SELL
+-- =====================================================
+local function StartAutoSellLoop()
+    task.spawn(function()
+        print("💰 Auto Sell: BACKGROUND MODE STARTED")
+        while SettingsState.AutoSell.TimeActive do
+            for i = 1, SettingsState.AutoSell.TimeInterval do
+                if not SettingsState.AutoSell.TimeActive then return end
+                task.wait(1)
+            end
+            task.spawn(function()
+                pcall(function() SellAll:InvokeServer() end)
+            end)
+        end
+    end)
 end
