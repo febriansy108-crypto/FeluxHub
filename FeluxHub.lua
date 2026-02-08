@@ -238,6 +238,31 @@ local function StartAutoSellLoop()
         end
     end)
 end
+
+TabSell:Toggle({ Title = "Auto Sell (Time)", Desc = "Safe Pauses Fishing to Sell", Icon = "timer", Value = false, Callback = function(state) SettingsState.AutoSell.TimeActive = state; if state then StartAutoSellLoop(); WindUI:Notify({Title = "Auto Sell", Content = "Loop Started", Duration = 2}) else SettingsState.AutoSell.IsSelling = false; WindUI:Notify({Title = "Auto Sell", Content = "Loop Stopped", Duration = 2}) end end })
+TabSell:Input({
+    Title = "Sell Interval (Seconds)",
+    Desc = "Time between sells",
+    Value = "500",
+    Callback = function(text)
+        -- hanya angka bulat
+        if not text:match("^%d+$") then
+            SettingsState.AutoSell.TimeInterval = 500
+            return "50"
+        end
+
+        local num = tonumber(text)
+        if not num then
+            SettingsState.AutoSell.TimeInterval = 500
+            return "50"
+        end
+
+        num = math.clamp(math.floor(num), 10, 300)
+        SettingsState.AutoSell.TimeInterval = num
+        return tostring(num)
+    end
+})
+TabSell:Button({ Title = "Sell Now", Desc = "Sell All Items Immediately", Icon = "trash-2", Callback = function() task.spawn(function() SettingsState.AutoSell.IsSelling = true; task.wait(0.2); pcall(function() SellAll:InvokeServer() end); WindUI:Notify({Title = "Sell All", Content = "Sold!", Duration = 2}); task.wait(0.5); SettingsState.AutoSell.IsSelling = false end) end })
 -- =====================================================
 -- FITUR FPS BOOST & DISABLE VFX
 -- =====================================================
